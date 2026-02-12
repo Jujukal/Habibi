@@ -87,8 +87,8 @@
     gap: 18px;
     min-height: 320px;
 
-    position: relative;          /* ✅ pour que “Non” puisse bouger DANS la carte */
-    overflow: hidden;            /* ✅ empêche “Non” de sortir visuellement */
+    position: relative;     /* ✅ repère pour le bouton en absolute */
+    overflow: hidden;       /* ✅ le Non ne sort jamais de la carte */
   }
 
   h1{
@@ -112,7 +112,7 @@
     justify-content:center;
     flex-wrap:wrap;
     margin-top: 6px;
-    position: relative;
+    /* ✅ PAS de position:relative ici, sinon le No absolute se repère sur btnrow */
   }
 
   button{
@@ -306,25 +306,30 @@
     noBtn.classList.add("bounce");
   }
 
-  function getCardBoundsForNo(btnRect){
+  function getCardBoundsForNo(){
     const c = card.getBoundingClientRect();
-    const pad = 16; // marge intérieure pour éviter les bords
+    const b = noBtn.getBoundingClientRect();
+    const pad = 16;
+
     const minX = pad;
     const minY = pad;
-    const maxX = c.width  - btnRect.width  - pad;
-    const maxY = c.height - btnRect.height - pad;
-    return {minX, minY, maxX, maxY, cardRect:c};
+    const maxX = c.width  - b.width  - pad;
+    const maxY = c.height - b.height - pad;
+
+    return {minX, minY, maxX, maxY, cardRect:c, btnRect:b};
   }
 
+  // ✅ clé : on sort le bouton de .btnrow et on l'append dans .card
   function detachNoIfNeeded(){
     if (noDetached) return;
 
-    // position du bouton en coordonnées carte
     const btn = noBtn.getBoundingClientRect();
     const c   = card.getBoundingClientRect();
 
     const leftInCard = btn.left - c.left;
     const topInCard  = btn.top  - c.top;
+
+    card.appendChild(noBtn);
 
     noBtn.style.position = "absolute";
     noBtn.style.left = leftInCard + "px";
@@ -336,12 +341,12 @@
 
   function keepNoInsideCard(){
     if (!noDetached) return;
-    const rect = noBtn.getBoundingClientRect();
-    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo(rect);
 
-    // rect en coordonnées carte
-    const leftInCard = rect.left - cardRect.left;
-    const topInCard  = rect.top  - cardRect.top;
+    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo();
+    const r = noBtn.getBoundingClientRect();
+
+    const leftInCard = r.left - cardRect.left;
+    const topInCard  = r.top  - cardRect.top;
 
     const x = clamp(leftInCard, minX, maxX);
     const y = clamp(topInCard,  minY, maxY);
@@ -351,14 +356,12 @@
   }
 
   function moveNoAwayFrom(pointerClientX, pointerClientY){
-    const rect = noBtn.getBoundingClientRect();
-    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo(rect);
+    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo();
+    const r = noBtn.getBoundingClientRect();
 
-    // centre du bouton en coords viewport
-    const cx = rect.left + rect.width/2;
-    const cy = rect.top  + rect.height/2;
+    const cx = r.left + r.width/2;
+    const cy = r.top  + r.height/2;
 
-    // vecteur fuite (viewport)
     let dx = cx - pointerClientX;
     let dy = cy - pointerClientY;
 
@@ -370,12 +373,11 @@
     const len = Math.hypot(dx, dy) || 1;
     dx /= len; dy /= len;
 
-    // position actuelle du bouton en coords carte
-    const leftInCard = rect.left - cardRect.left;
-    const topInCard  = rect.top  - cardRect.top;
+    const leftInCard = r.left - cardRect.left;
+    const topInCard  = r.top  - cardRect.top;
 
-    // déplacement (dans la carte)
     const step = 150;
+
     let tx = leftInCard + dx * step;
     let ty = topInCard  + dy * step;
 
@@ -399,7 +401,6 @@
     yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
     yesBtn.style.transform = `scale(${yesScale})`;
 
-    // distance entre pointeur et centre du "Non"
     const r = noBtn.getBoundingClientRect();
     const cx = r.left + r.width/2;
     const cy = r.top  + r.height/2;
@@ -456,10 +457,9 @@
     startBurstHearts();
   });
 
-  window.addEventListener("resize", () => {
-    keepNoInsideCard();
-  });
+  window.addEventListener("resize", () => keepNoInsideCard());
 </script>
 </body>
 </html>
+
 
