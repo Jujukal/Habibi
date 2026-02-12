@@ -396,5 +396,70 @@
     const dt = Math.min(0.05, (t - lastT)/1000);
     lastT = t;
 
-    yesScale = Math.min(YES_MAX,_
+    yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    // distance entre pointeur et centre du "Non"
+    const r = noBtn.getBoundingClientRect();
+    const cx = r.left + r.width/2;
+    const cy = r.top  + r.height/2;
+    const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+
+    const fleeRadius = 140;
+
+    if (pointer.active && dist < fleeRadius){
+      detachNoIfNeeded();
+      moveNoAwayFrom(pointer.x, pointer.y);
+      yesScale = Math.min(YES_MAX, yesScale + 0.02);
+    }
+
+    keepNoInsideCard();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Si elle essaye de cliquer "Non" : il fuit (sans sortir de la carte)
+  noBtn.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    detachNoIfNeeded();
+    moveNoAwayFrom(pointer.x, pointer.y);
+  });
+
+  noBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const {x,y} = pointerXY(e);
+    pointer.x=x; pointer.y=y; pointer.active=true;
+    detachNoIfNeeded();
+    moveNoAwayFrom(pointer.x, pointer.y);
+  }, {passive:false});
+
+  /* ----------------------------
+     ❤️ YES -> result + heart burst
+  ---------------------------- */
+  let burstTimer = null;
+  function startBurstHearts(){
+    if (burstTimer) return;
+    burstTimer = setInterval(() => {
+      const h = document.createElement("div");
+      h.className = "burst-heart";
+      h.textContent = "❤️";
+      h.style.setProperty("--x", (Math.random()*100) + "vw");
+      h.style.setProperty("--s", (18 + Math.random()*26) + "px");
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3800);
+    }, 220);
+  }
+
+  yesBtn.addEventListener("click", () => {
+    card.classList.add("hidden");
+    result.classList.remove("hidden");
+    startBurstHearts();
+  });
+
+  window.addEventListener("resize", () => {
+    keepNoInsideCard();
+  });
+</script>
+</body>
+</html>
 
