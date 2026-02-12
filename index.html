@@ -86,6 +86,9 @@
     justify-content:center;
     gap: 18px;
     min-height: 320px;
+
+    position: relative;          /* ✅ pour que “Non” puisse bouger DANS la carte */
+    overflow: hidden;            /* ✅ empêche “Non” de sortir visuellement */
   }
 
   h1{
@@ -217,30 +220,6 @@
   const result   = document.getElementById("result");
 
   /* ----------------------------
-     Safe area iPhone + padding
-  ---------------------------- */
-  function safePadding(){
-    const cs = getComputedStyle(document.documentElement);
-    const top = parseFloat(cs.getPropertyValue("env(safe-area-inset-top)")) || 0;
-    const right = parseFloat(cs.getPropertyValue("env(safe-area-inset-right)")) || 0;
-    const bottom = parseFloat(cs.getPropertyValue("env(safe-area-inset-bottom)")) || 0;
-    const left = parseFloat(cs.getPropertyValue("env(safe-area-inset-left)")) || 0;
-    return {top,right,bottom,left};
-  }
-
-  function getBoundsWithSafeArea(btnRect){
-    const sa = safePadding();
-    const pad = 18;
-    const minX = pad + sa.left;
-    const minY = pad + sa.top;
-    const maxX = window.innerWidth  - btnRect.width  - pad - sa.right;
-    const maxY = window.innerHeight - btnRect.height - pad - sa.bottom;
-    return {minX, minY, maxX, maxY};
-  }
-
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-
-  /* ----------------------------
      💖 Background hearts
   ---------------------------- */
   function spawnBgHeart(){
@@ -315,9 +294,11 @@
   const YES_GROW_PER_SEC = 0.06;
 
   /* ----------------------------
-     🙃 Non : stays always visible
+     🙃 Non : reste DANS la carte
   ---------------------------- */
   let noDetached = false;
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   function bounceNo(){
     noBtn.classList.remove("bounce");
@@ -325,35 +306,61 @@
     noBtn.classList.add("bounce");
   }
 
+  function getCardBoundsForNo(btnRect){
+    const c = card.getBoundingClientRect();
+    const pad = 16; // marge intérieure pour éviter les bords
+    const minX = pad;
+    const minY = pad;
+    const maxX = c.width  - btnRect.width  - pad;
+    const maxY = c.height - btnRect.height - pad;
+    return {minX, minY, maxX, maxY, cardRect:c};
+  }
+
   function detachNoIfNeeded(){
     if (noDetached) return;
-    const r = noBtn.getBoundingClientRect();
-    noBtn.style.position = "fixed";
-    noBtn.style.left = r.left + "px";
-    noBtn.style.top  = r.top  + "px";
+
+    // position du bouton en coordonnées carte
+    const btn = noBtn.getBoundingClientRect();
+    const c   = card.getBoundingClientRect();
+
+    const leftInCard = btn.left - c.left;
+    const topInCard  = btn.top  - c.top;
+
+    noBtn.style.position = "absolute";
+    noBtn.style.left = leftInCard + "px";
+    noBtn.style.top  = topInCard  + "px";
+    noBtn.style.zIndex = "10";
+
     noDetached = true;
   }
 
-  function keepNoInsideViewport(){
+  function keepNoInsideCard(){
+    if (!noDetached) return;
     const rect = noBtn.getBoundingClientRect();
-    const {minX, minY, maxX, maxY} = getBoundsWithSafeArea(rect);
+    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo(rect);
 
-    const x = clamp(rect.left, minX, maxX);
-    const y = clamp(rect.top,  minY, maxY);
+    // rect en coordonnées carte
+    const leftInCard = rect.left - cardRect.left;
+    const topInCard  = rect.top  - cardRect.top;
+
+    const x = clamp(leftInCard, minX, maxX);
+    const y = clamp(topInCard,  minY, maxY);
 
     noBtn.style.left = x + "px";
     noBtn.style.top  = y + "px";
   }
 
-  function moveNoAwayFrom(px, py){
+  function moveNoAwayFrom(pointerClientX, pointerClientY){
     const rect = noBtn.getBoundingClientRect();
-    const {minX, minY, maxX, maxY} = getBoundsWithSafeArea(rect);
+    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo(rect);
 
+    // centre du bouton en coords viewport
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
 
-    let dx = cx - px;
-    let dy = cy - py;
+    // vecteur fuite (viewport)
+    let dx = cx - pointerClientX;
+    let dy = cy - pointerClientY;
 
     if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001){
       dx = (Math.random() - 0.5);
@@ -363,12 +370,15 @@
     const len = Math.hypot(dx, dy) || 1;
     dx /= len; dy /= len;
 
-    // déplacement en plusieurs essais pour éviter d'aller sur un bord
-    const step = 170;
-    let tx = rect.left + dx * step;
-    let ty = rect.top  + dy * step;
+    // position actuelle du bouton en coords carte
+    const leftInCard = rect.left - cardRect.left;
+    const topInCard  = rect.top  - cardRect.top;
 
-    // clamp toujours dans l'écran
+    // déplacement (dans la carte)
+    const step = 150;
+    let tx = leftInCard + dx * step;
+    let ty = topInCard  + dy * step;
+
     tx = clamp(tx, minX, maxX);
     ty = clamp(ty, minY, maxY);
 
@@ -378,79 +388,13 @@
     bounceNo();
   }
 
-  // Si jamais il n'est pas détaché, on ne touche pas à sa position (il reste à côté du Oui)
-  // Dès qu'on s'approche -> il se détache puis fuit, mais reste visible.
+  /* ----------------------------
+     Loop : agrandit Oui + fuite
+  ---------------------------- */
   let lastT = performance.now();
   function loop(t){
     const dt = Math.min(0.05, (t - lastT)/1000);
     lastT = t;
 
-    yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
-    yesBtn.style.transform = `scale(${yesScale})`;
-
-    // tant qu'il est "inline", on calcule la distance sur sa position actuelle
-    const rect = noBtn.getBoundingClientRect();
-    const cx = rect.left + rect.width/2;
-    const cy = rect.top  + rect.height/2;
-    const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
-
-    const fleeRadius = 140;
-
-    if (pointer.active && dist < fleeRadius){
-      detachNoIfNeeded();
-      moveNoAwayFrom(pointer.x, pointer.y);
-      yesScale = Math.min(YES_MAX, yesScale + 0.02);
-    }
-
-    // sécurité : s'il est détaché, on le garde toujours dans la fenêtre
-    if (noDetached) keepNoInsideViewport();
-
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-
-  // Si elle essaye de cliquer "Non" : il fuit (sans disparaître)
-  noBtn.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    detachNoIfNeeded();
-    moveNoAwayFrom(pointer.x, pointer.y);
-  });
-
-  noBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const {x,y} = pointerXY(e);
-    pointer.x=x; pointer.y=y; pointer.active=true;
-    detachNoIfNeeded();
-    moveNoAwayFrom(pointer.x, pointer.y);
-  }, {passive:false});
-
-  /* ----------------------------
-     ❤️ YES -> result + heart burst
-  ---------------------------- */
-  let burstTimer = null;
-  function startBurstHearts(){
-    if (burstTimer) return;
-    burstTimer = setInterval(() => {
-      const h = document.createElement("div");
-      h.className = "burst-heart";
-      h.textContent = "❤️";
-      h.style.setProperty("--x", (Math.random()*100) + "vw");
-      h.style.setProperty("--s", (18 + Math.random()*26) + "px");
-      document.body.appendChild(h);
-      setTimeout(() => h.remove(), 3800);
-    }, 220);
-  }
-
-  yesBtn.addEventListener("click", () => {
-    card.classList.add("hidden");
-    result.classList.remove("hidden");
-    startBurstHearts();
-  });
-
-  window.addEventListener("resize", () => {
-    if (noDetached) keepNoInsideViewport();
-  });
-</script>
-</body>
-</html>
+    yesScale = Math.min(YES_MAX,_
 
