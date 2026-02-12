@@ -32,7 +32,6 @@
     touch-action: none;
   }
 
-  /* 💖 Coeurs en arrière-plan */
   #hearts-bg{
     position:fixed;
     inset:0;
@@ -54,7 +53,6 @@
     100% { transform: translateY(120vh) rotate(calc(var(--r) + 40deg)); }
   }
 
-  /* ✨ Apparition douce */
   .wrap{
     position:relative;
     z-index:1;
@@ -66,7 +64,6 @@
     to  { opacity:1; transform: translateY(0) scale(1); }
   }
 
-  /* 📱 Glass premium */
   .card{
     width:100%;
     padding: 32px 28px;
@@ -87,8 +84,8 @@
     gap: 18px;
     min-height: 320px;
 
-    position: relative;     /* ✅ repère pour le bouton en absolute */
-    overflow: hidden;       /* ✅ le Non ne sort jamais de la carte */
+    position: relative;
+    overflow: hidden;
   }
 
   h1{
@@ -112,7 +109,6 @@
     justify-content:center;
     flex-wrap:wrap;
     margin-top: 6px;
-    /* ✅ PAS de position:relative ici, sinon le No absolute se repère sur btnrow */
   }
 
   button{
@@ -140,7 +136,6 @@
     border: 1px solid rgba(0,0,0,.08);
   }
 
-  /* ✅ Bounce */
   @keyframes bounce {
     0%   { transform: scale(1); }
     30%  { transform: scale(1.12); }
@@ -151,7 +146,6 @@
 
   .hidden{ display:none; }
 
-  /* ❤️ burst */
   .burst-heart{
     position:fixed;
     bottom:-40px;
@@ -168,7 +162,6 @@
     100% { transform: translateY(-110vh) scale(1.5); opacity:0; }
   }
 
-  /* ✨ trail hearts */
   .trail-heart{
     position:fixed;
     transform: translate(-50%, -50%) scale(1);
@@ -287,13 +280,6 @@
   window.addEventListener("mouseleave", () => pointer.active=false);
 
   /* ----------------------------
-     💘 Oui grossit progressivement
-  ---------------------------- */
-  let yesScale = 1.0;
-  const YES_MAX = 1.45;
-  const YES_GROW_PER_SEC = 0.06;
-
-  /* ----------------------------
      🙃 Non : reste DANS la carte
   ---------------------------- */
   let noDetached = false;
@@ -319,7 +305,6 @@
     return {minX, minY, maxX, maxY, cardRect:c, btnRect:b};
   }
 
-  // ✅ clé : on sort le bouton de .btnrow et on l'append dans .card
   function detachNoIfNeeded(){
     if (noDetached) return;
 
@@ -376,8 +361,7 @@
     const leftInCard = r.left - cardRect.left;
     const topInCard  = r.top  - cardRect.top;
 
-    const step = 150;
-
+    const step = 170; // un peu plus "fort" si tu veux
     let tx = leftInCard + dx * step;
     let ty = topInCard  + dy * step;
 
@@ -391,27 +375,19 @@
   }
 
   /* ----------------------------
-     Loop : agrandit Oui + fuite
+     Loop : fuite (sans grossir Oui)
   ---------------------------- */
-  let lastT = performance.now();
-  function loop(t){
-    const dt = Math.min(0.05, (t - lastT)/1000);
-    lastT = t;
-
-    yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
-    yesBtn.style.transform = `scale(${yesScale})`;
-
+  function loop(){
     const r = noBtn.getBoundingClientRect();
     const cx = r.left + r.width/2;
     const cy = r.top  + r.height/2;
     const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
 
-    const fleeRadius = 140;
+    const fleeRadius = 240; // ✅ périmètre de fuite PLUS large (augmente encore si tu veux)
 
     if (pointer.active && dist < fleeRadius){
       detachNoIfNeeded();
       moveNoAwayFrom(pointer.x, pointer.y);
-      yesScale = Math.min(YES_MAX, yesScale + 0.02);
     }
 
     keepNoInsideCard();
@@ -419,7 +395,7 @@
   }
   requestAnimationFrame(loop);
 
-  // Si elle essaye de cliquer "Non" : il fuit (sans sortir de la carte)
+  // Si elle essaye de cliquer "Non" : il fuit (dans la carte)
   noBtn.addEventListener("mousedown", (e) => {
     e.preventDefault();
     detachNoIfNeeded();
@@ -461,5 +437,4 @@
 </script>
 </body>
 </html>
-
 
