@@ -1,137 +1,288 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Ma Valentine 💘</title>
 
 <style>
-body {
-    margin: 0;
-    height: 100vh;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
+  :root{
+    --bg1:#ff9a9e;
+    --bg2:#fad0c4;
+    --red:#ff3b30;
+    --text:#111;
+    --muted:#6b7280;
+  }
 
-/* 💌 CARTE BLANCHE PLUS GRANDE */
-.card {
-    background: white;
-    width: 520px;
-    height: 300px;
-    border-radius: 25px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  *{ box-sizing:border-box; }
 
-    /* 🔥 centre tout à l'intérieur */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-}
+  body{
+    margin:0;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 800px at 20% 20%, rgba(255,255,255,.45), rgba(255,255,255,0) 55%),
+                linear-gradient(135deg, var(--bg1), var(--bg2));
+  }
 
-h1 {
-    color: #e63946;
-    margin-bottom: 25px;
-}
+  /* 💖 Coeurs en arrière-plan */
+  #hearts-bg{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
 
-/* Boutons */
-button {
-    font-size: 18px;
-    padding: 12px 25px;
-    margin: 10px;
-    border-radius: 30px;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-}
+  .bg-heart{
+    position:absolute;
+    left:var(--x);
+    top:-10vh;
+    font-size: var(--s);
+    opacity: var(--o);
+    filter: blur(var(--b));
+    transform: translateY(0) rotate(var(--r));
+    animation: fall var(--d) linear infinite;
+  }
 
-#yes {
-    background: #e63946;
-    color: white;
-}
+  @keyframes fall{
+    0%   { transform: translateY(-10vh) rotate(var(--r)); }
+    100% { transform: translateY(120vh) rotate(calc(var(--r) + 40deg)); }
+  }
 
-#no {
-    background: #ccc;
-}
+  /* ✨ Animation douce à l’apparition */
+  .wrap{
+    position:relative;
+    z-index:1;
+    width:min(560px, calc(100vw - 32px));
+    animation: popIn 700ms cubic-bezier(.2,.9,.2,1) both;
+  }
 
-.hidden {
-    display: none;
-}
+  @keyframes popIn{
+    from{ opacity:0; transform: translateY(12px) scale(.98); }
+    to  { opacity:1; transform: translateY(0) scale(1); }
+  }
 
-/* ❤️ animation coeurs */
-.heart {
-    position: absolute;
-    color: #e63946;
-    font-size: 24px;
-    animation: float 4s linear forwards;
-}
+  /* 📱 Design premium style Apple : glassmorphism */
+  .card{
+    width:100%;
+    padding: 32px 28px;
+    border-radius: 28px;
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow:
+      0 24px 60px rgba(0,0,0,.18),
+      0 1px 0 rgba(255,255,255,.6) inset;
+    text-align:center;
 
-@keyframes float {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-600px) scale(1.5);
-        opacity: 0;
-    }
-}
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 18px;
+    min-height: 320px;
+  }
+
+  h1{
+    margin:0;
+    font-size: clamp(22px, 3.2vw, 30px);
+    letter-spacing: -0.02em;
+    line-height:1.1;
+    color: #1b1b1f;
+    /* comme tu voulais avant : une ligne si possible */
+    white-space: nowrap;
+  }
+
+  .subtitle{
+    margin:0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .btnrow{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-top: 6px;
+  }
+
+  button{
+    border:0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-size: 16px;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+    user-select:none;
+  }
+
+  #yes{
+    background: linear-gradient(180deg, #ff5a52, var(--red));
+    color:white;
+  }
+  #yes:hover{ transform: translateY(-1px); box-shadow: 0 14px 30px rgba(0,0,0,.14); }
+  #yes:active{ transform: translateY(0px) scale(.99); }
+
+  #no{
+    background: rgba(17,17,17,.06);
+    color:#111;
+    box-shadow: none;
+    border: 1px solid rgba(0,0,0,.08);
+  }
+  #no:hover{ transform: translateY(-1px); }
+
+  .hidden{ display:none; }
+
+  /* ❤️ Explosion de coeurs au "Oui" */
+  .burst-heart{
+    position:fixed;
+    bottom:-40px;
+    left:var(--x);
+    font-size: var(--s);
+    opacity: .95;
+    transform: translateY(0) scale(1);
+    animation: rise 3.5s ease-out forwards;
+    pointer-events:none;
+    z-index:2;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,.12));
+  }
+
+  @keyframes rise{
+    0%   { transform: translateY(0) scale(1); opacity:.95; }
+    100% { transform: translateY(-110vh) scale(1.5); opacity:0; }
+  }
+
+  /* Sur petit écran, autoriser le retour à la ligne au lieu de déborder */
+  @media (max-width: 420px){
+    h1{ white-space: normal; }
+    .card{ padding: 26px 18px; min-height: 300px; }
+  }
 </style>
 </head>
 
 <body>
+  <!-- 💖 Coeurs en arrière-plan dès l’ouverture -->
+  <div id="hearts-bg" aria-hidden="true"></div>
 
-<div class="card" id="card">
-    <h1>💌 Veux-tu être ma Valentine ? 💌</h1>
-    <div>
+  <div class="wrap">
+    <div class="card" id="card">
+      <h1>💌 Veux-tu être ma Valentine ? 💌</h1>
+      <p class="subtitle">J’ai une surprise rien que pour toi ✨</p>
+
+      <div class="btnrow">
         <button id="yes">Oui 💖</button>
         <button id="no">Non 🙃</button>
+      </div>
     </div>
-</div>
 
-<div class="card hidden" id="result">
-    <h1>🥰 Youpiii !</h1>
-    <p>
+    <div class="card hidden" id="result">
+      <h1>🥰 Youpiii !</h1>
+      <p class="subtitle">
         RDV le <strong>14 février à 20h</strong><br>
         📍 Surprise ✨
-    </p>
-</div>
+      </p>
+    </div>
+  </div>
 
 <script>
-const yesBtn = document.getElementById("yes");
-const noBtn = document.getElementById("no");
-const card = document.getElementById("card");
-const result = document.getElementById("result");
+  const heartsBg = document.getElementById("hearts-bg");
+  const yesBtn = document.getElementById("yes");
+  const noBtn = document.getElementById("no");
+  const card = document.getElementById("card");
+  const result = document.getElementById("result");
 
-yesBtn.onclick = () => {
+  // --- 💖 Coeurs en arrière-plan (dès l'ouverture) ---
+  function spawnBgHeart(){
+    const el = document.createElement("div");
+    el.className = "bg-heart";
+    el.textContent = "❤️";
+
+    const x = Math.random() * 100;              // vw
+    const size = 10 + Math.random() * 22;       // px
+    const opacity = 0.06 + Math.random() * 0.12;
+    const blur = Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0;
+    const duration = 10 + Math.random() * 14;   // s
+    const rotate = (-20 + Math.random() * 40);  // deg
+
+    el.style.setProperty("--x", x + "vw");
+    el.style.setProperty("--s", size + "px");
+    el.style.setProperty("--o", opacity);
+    el.style.setProperty("--b", blur + "px");
+    el.style.setProperty("--d", duration + "s");
+    el.style.setProperty("--r", rotate + "deg");
+
+    heartsBg.appendChild(el);
+
+    // Nettoyage pour éviter d'accumuler
+    setTimeout(() => el.remove(), duration * 1000 + 2000);
+  }
+
+  // Densité douce (premium)
+  for(let i=0;i<18;i++){
+    setTimeout(spawnBgHeart, i * 350);
+  }
+  setInterval(spawnBgHeart, 650);
+
+  // --- ❤️ Effet "Oui" : pluie de coeurs + écran RDV ---
+  let burstTimer = null;
+
+  function startBurstHearts(){
+    if (burstTimer) return;
+    burstTimer = setInterval(() => {
+      const h = document.createElement("div");
+      h.className = "burst-heart";
+      h.textContent = "❤️";
+
+      const x = Math.random() * 100;
+      const size = 18 + Math.random() * 26;
+
+      h.style.setProperty("--x", x + "vw");
+      h.style.setProperty("--s", size + "px");
+
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3800);
+    }, 220);
+  }
+
+  yesBtn.addEventListener("click", () => {
     card.classList.add("hidden");
     result.classList.remove("hidden");
-    startHearts();
-};
+    startBurstHearts();
+  });
 
-noBtn.onmouseover = () => {
-    noBtn.style.position = "absolute";
-    noBtn.style.left = Math.random() * 80 + "vw";
-    noBtn.style.top = Math.random() * 80 + "vh";
-};
+  // --- 🙃 Bouton "Non" qui s'échappe ---
+  function moveNoButton(){
+    // place le bouton en fixed pour se déplacer sur l'écran
+    noBtn.style.position = "fixed";
 
-function startHearts() {
-    setInterval(() => {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerHTML = "❤️";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.bottom = "0px";
-        document.body.appendChild(heart);
+    const padding = 16;
+    const btnRect = noBtn.getBoundingClientRect();
+    const maxX = window.innerWidth - btnRect.width - padding;
+    const maxY = window.innerHeight - btnRect.height - padding;
 
-        setTimeout(() => heart.remove(), 4000);
-    }, 300);
-}
+    const x = padding + Math.random() * Math.max(0, maxX - padding);
+    const y = padding + Math.random() * Math.max(0, maxY - padding);
+
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+  }
+
+  noBtn.addEventListener("mouseover", moveNoButton);
+  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoButton(); }, {passive:false});
+
+  // Ajuste si l'écran change (mobile rotation)
+  window.addEventListener("resize", () => {
+    if (noBtn.style.position === "fixed") moveNoButton();
+  });
 </script>
-
 </body>
 </html>
