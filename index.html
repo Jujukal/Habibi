@@ -29,7 +29,7 @@
       linear-gradient(135deg, var(--bg1), var(--bg2));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    touch-action: none; /* pour un tracking fluide du doigt */
+    touch-action: none;
   }
 
   /* 💖 Coeurs en arrière-plan */
@@ -66,7 +66,7 @@
     to  { opacity:1; transform: translateY(0) scale(1); }
   }
 
-  /* 📱 Apple-ish glass */
+  /* 📱 Glass premium */
   .card{
     width:100%;
     padding: 32px 28px;
@@ -109,6 +109,7 @@
     justify-content:center;
     flex-wrap:wrap;
     margin-top: 6px;
+    position: relative;
   }
 
   button{
@@ -121,18 +122,16 @@
     box-shadow: 0 10px 24px rgba(0,0,0,.10);
     user-select:none;
     -webkit-tap-highlight-color: transparent;
-    will-change: transform;
+    will-change: transform, left, top;
   }
 
-  /* 💘 Bouton Oui (grossit progressivement via JS) */
+  /* 💘 Oui */
   #yes{
     background: linear-gradient(180deg, #ff5a52, var(--red));
     color:white;
   }
-  #yes:hover{ transform: translateY(-1px) scale(var(--yesScale, 1)); box-shadow: 0 14px 30px rgba(0,0,0,.14); }
-  #yes:active{ transform: translateY(0px) scale(calc(var(--yesScale, 1) * .99)); }
 
-  /* 🙃 Bouton Non (se déplace en position fixed via JS) */
+  /* 🙃 Non */
   #no{
     background: rgba(17,17,17,.06);
     color:#111;
@@ -149,7 +148,6 @@
     left:var(--x);
     font-size: var(--s);
     opacity: .95;
-    transform: translateY(0) scale(1);
     animation: rise 3.5s ease-out forwards;
     pointer-events:none;
     z-index:2;
@@ -163,17 +161,14 @@
   /* ✨ Petits coeurs qui suivent le doigt */
   .trail-heart{
     position:fixed;
-    left:0; top:0;
     transform: translate(-50%, -50%) scale(1);
-    font-size: 16px;
-    opacity: .9;
     pointer-events:none;
     z-index:2;
-    filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
     animation: trail 900ms ease-out forwards;
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
   }
   @keyframes trail{
-    0%   { transform: translate(-50%, -50%) scale(1); opacity:.9; }
+    0%   { transform: translate(-50%, -50%) scale(1); opacity:.85; }
     100% { transform: translate(-50%, calc(-50% - 40px)) scale(1.35); opacity:0; }
   }
 
@@ -190,9 +185,9 @@
   <div class="wrap">
     <div class="card" id="card">
       <h1>💌 Veux-tu être ma Habibi ? 💌</h1>
-      <p class="subtitle">Approche-toi du “Non” 😈</p>
+      <p class="subtitle">Essaie d’approcher le “Non” 😈</p>
 
-      <div class="btnrow">
+      <div class="btnrow" id="btnrow">
         <button id="yes">Oui 💖</button>
         <button id="no">Non 🙃</button>
       </div>
@@ -211,51 +206,44 @@
   const heartsBg = document.getElementById("hearts-bg");
   const yesBtn   = document.getElementById("yes");
   const noBtn    = document.getElementById("no");
+  const btnrow   = document.getElementById("btnrow");
   const card     = document.getElementById("card");
   const result   = document.getElementById("result");
 
   /* ----------------------------
-     💖 Background hearts (soft)
+     💖 Background hearts
   ---------------------------- */
   function spawnBgHeart(){
     const el = document.createElement("div");
     el.className = "bg-heart";
     el.textContent = "❤️";
 
-    const x = Math.random() * 100;
-    const size = 10 + Math.random() * 22;
-    const opacity = 0.06 + Math.random() * 0.12;
-    const blur = Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0;
-    const duration = 10 + Math.random() * 14;
-    const rotate = (-20 + Math.random() * 40);
-
-    el.style.setProperty("--x", x + "vw");
-    el.style.setProperty("--s", size + "px");
-    el.style.setProperty("--o", opacity);
-    el.style.setProperty("--b", blur + "px");
-    el.style.setProperty("--d", duration + "s");
-    el.style.setProperty("--r", rotate + "deg");
+    el.style.setProperty("--x", (Math.random()*100) + "vw");
+    el.style.setProperty("--s", (10 + Math.random()*22) + "px");
+    el.style.setProperty("--o", (0.06 + Math.random()*0.12));
+    el.style.setProperty("--b", (Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0) + "px");
+    el.style.setProperty("--d", (10 + Math.random()*14) + "s");
+    el.style.setProperty("--r", (-20 + Math.random()*40) + "deg");
 
     heartsBg.appendChild(el);
-    setTimeout(() => el.remove(), duration * 1000 + 2000);
+    const dur = parseFloat(el.style.getPropertyValue("--d")) || 12;
+    setTimeout(() => el.remove(), dur*1000 + 2000);
   }
   for(let i=0;i<18;i++) setTimeout(spawnBgHeart, i * 350);
   setInterval(spawnBgHeart, 650);
 
   /* ----------------------------
-     ✨ Hearts react to finger/mouse
-     (throttled for iPhone smooth)
+     ✨ Hearts follow finger/mouse (throttled)
   ---------------------------- */
   let lastTrail = 0;
   function spawnTrailHeart(x, y){
     const now = performance.now();
-    if (now - lastTrail < 55) return; // throttle
+    if (now - lastTrail < 55) return;
     lastTrail = now;
 
     const h = document.createElement("div");
     h.className = "trail-heart";
     h.textContent = "❤️";
-
     h.style.left = x + "px";
     h.style.top  = y + "px";
     h.style.fontSize = (12 + Math.random()*12) + "px";
@@ -265,6 +253,7 @@
     setTimeout(() => h.remove(), 950);
   }
 
+  const pointer = { x: innerWidth/2, y: innerHeight/2, active:false };
   function pointerXY(e){
     if (e.touches && e.touches[0]) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
     return {x: e.clientX, y: e.clientY};
@@ -272,120 +261,112 @@
 
   window.addEventListener("mousemove", (e) => {
     const {x,y} = pointerXY(e);
+    pointer.x=x; pointer.y=y; pointer.active=true;
     spawnTrailHeart(x,y);
-    pointer.x = x; pointer.y = y; pointer.active = true;
   }, {passive:true});
-
-  window.addEventListener("touchmove", (e) => {
-    const {x,y} = pointerXY(e);
-    spawnTrailHeart(x,y);
-    pointer.x = x; pointer.y = y; pointer.active = true;
-  }, {passive:false});
 
   window.addEventListener("touchstart", (e) => {
     const {x,y} = pointerXY(e);
+    pointer.x=x; pointer.y=y; pointer.active=true;
     spawnTrailHeart(x,y);
-    pointer.x = x; pointer.y = y; pointer.active = true;
   }, {passive:false});
 
-  window.addEventListener("mouseleave", () => { pointer.active = false; });
+  window.addEventListener("touchmove", (e) => {
+    const {x,y} = pointerXY(e);
+    pointer.x=x; pointer.y=y; pointer.active=true;
+    spawnTrailHeart(x,y);
+  }, {passive:false});
+
+  window.addEventListener("mouseleave", () => pointer.active=false);
 
   /* ----------------------------
-     🙃 "Non" moves away when you approach
+     💘 Oui grossit progressivement
   ---------------------------- */
-  const pointer = { x: window.innerWidth/2, y: window.innerHeight/2, active: false };
+  let yesScale = 1.0;
+  const YES_MAX = 1.45;
+  const YES_GROW_PER_SEC = 0.06;
 
-  // place "Non" in fixed position at start (so it can flee anywhere)
-  function placeNoInitial(){
+  /* ----------------------------
+     🙃 Non: start beside Oui, then "detaches" and flees when you approach
+  ---------------------------- */
+  let noDetached = false;
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function detachNoIfNeeded(){
+    if (noDetached) return;
+
+    // prendre sa position actuelle (à côté du Oui)
+    const r = noBtn.getBoundingClientRect();
+
+    // le mettre en fixed exactement au même endroit (sans "saut")
     noBtn.style.position = "fixed";
-    moveNoToRandom();
-  }
+    noBtn.style.left = r.left + "px";
+    noBtn.style.top  = r.top  + "px";
 
-  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
-  function moveNoToRandom(){
-    const padding = 18;
-    const rect = noBtn.getBoundingClientRect();
-    const maxX = window.innerWidth  - rect.width  - padding;
-    const maxY = window.innerHeight - rect.height - padding;
-
-    const x = padding + Math.random() * Math.max(0, maxX - padding);
-    const y = padding + Math.random() * Math.max(0, maxY - padding);
-
-    noBtn.style.left = x + "px";
-    noBtn.style.top  = y + "px";
+    noDetached = true;
   }
 
   function moveNoAwayFrom(px, py){
     const padding = 18;
     const rect = noBtn.getBoundingClientRect();
 
-    // current center of button
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
 
     let dx = cx - px;
     let dy = cy - py;
 
-    // if pointer is exactly at center, choose random direction
     if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001){
       dx = (Math.random() - 0.5);
       dy = (Math.random() - 0.5);
     }
 
-    // normalize
     const len = Math.hypot(dx, dy) || 1;
     dx /= len; dy /= len;
 
-    // step size (bigger = more "magical")
-    const step = 140;
+    const step = 150;
 
-    // new top-left position
-    const targetX = (rect.left + dx * step);
-    const targetY = (rect.top  + dy * step);
+    const targetX = rect.left + dx * step;
+    const targetY = rect.top  + dy * step;
 
-    const maxX = window.innerWidth  - rect.width  - padding;
-    const maxY = window.innerHeight - rect.height - padding;
+    const maxX = innerWidth  - rect.width  - padding;
+    const maxY = innerHeight - rect.height - padding;
 
     noBtn.style.left = clamp(targetX, padding, maxX) + "px";
     noBtn.style.top  = clamp(targetY, padding, maxY) + "px";
   }
 
-  // proximity detection loop (super smooth)
-  let yesScale = 1.0;
-  const YES_MAX = 1.45; // limite grossissement
-  const YES_GROW_PER_SEC = 0.06; // grossit progressivement
   let lastT = performance.now();
-
   function loop(t){
-    const dt = Math.min(0.05, (t - lastT) / 1000);
+    const dt = Math.min(0.05, (t - lastT)/1000);
     lastT = t;
 
-    // 💘 Oui grossit progressivement
+    // Oui grossit doucement
     yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
-    yesBtn.style.setProperty("--yesScale", yesScale.toFixed(3));
     yesBtn.style.transform = `scale(${yesScale})`;
 
-    // 🙃 Non fuit seulement si on s'approche
+    // Non fuit si on s'approche
     const rect = noBtn.getBoundingClientRect();
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
 
     const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+    const fleeRadius = 130;
 
-    // rayon de "détection" (mobile-friendly)
-    const fleeRadius = 140;
-
-    // si le doigt/souris s'approche, il fuit
     if (pointer.active && dist < fleeRadius){
+      detachNoIfNeeded();
       moveNoAwayFrom(pointer.x, pointer.y);
-
-      // petit bonus: Oui gagne un mini boost quand Non fuit 😈
-      yesScale = Math.min(YES_MAX, yesScale + 0.015);
+      yesScale = Math.min(YES_MAX, yesScale + 0.02); // petit boost 😈
     }
 
     requestAnimationFrame(loop);
   }
+  requestAnimationFrame(loop);
+
+  // Si elle tente de cliquer "Non", il se détache et fuit
+  noBtn.addEventListener("mousedown", (e) => { e.preventDefault(); detachNoIfNeeded(); moveNoAwayFrom(pointer.x, pointer.y); });
+  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); detachNoIfNeeded(); moveNoAwayFrom(pointer.x, pointer.y); }, {passive:false});
 
   /* ----------------------------
      ❤️ YES -> result + heart burst
@@ -397,8 +378,8 @@
       const h = document.createElement("div");
       h.className = "burst-heart";
       h.textContent = "❤️";
-      h.style.setProperty("--x", (Math.random() * 100) + "vw");
-      h.style.setProperty("--s", (18 + Math.random() * 26) + "px");
+      h.style.setProperty("--x", (Math.random()*100) + "vw");
+      h.style.setProperty("--s", (18 + Math.random()*26) + "px");
       document.body.appendChild(h);
       setTimeout(() => h.remove(), 3800);
     }, 220);
@@ -410,17 +391,16 @@
     startBurstHearts();
   });
 
-  // Si elle essaye de cliquer "Non" sur mobile, il fuit aussi
-  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoToRandom(); }, {passive:false});
-  noBtn.addEventListener("mousedown", (e) => { e.preventDefault(); moveNoToRandom(); });
-
-  // init
-  placeNoInitial();
-  requestAnimationFrame(loop);
-
+  // Recalage si rotation/resize (mobile)
   window.addEventListener("resize", () => {
-    // garder le bouton dans l'écran
-    moveNoToRandom();
+    if (!noDetached) return;
+    // garder "Non" dans l'écran après resize
+    const rect = noBtn.getBoundingClientRect();
+    const padding = 18;
+    const maxX = innerWidth - rect.width - padding;
+    const maxY = innerHeight - rect.height - padding;
+    noBtn.style.left = clamp(rect.left, padding, maxX) + "px";
+    noBtn.style.top  = clamp(rect.top, padding, maxY) + "px";
   });
 </script>
 </body>
