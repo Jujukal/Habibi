@@ -125,13 +125,11 @@
     will-change: transform, left, top;
   }
 
-  /* 💘 Oui */
   #yes{
     background: linear-gradient(180deg, #ff5a52, var(--red));
     color:white;
   }
 
-  /* 🙃 Non */
   #no{
     background: rgba(17,17,17,.06);
     color:#111;
@@ -139,20 +137,18 @@
     border: 1px solid rgba(0,0,0,.08);
   }
 
-  /* ✅ Bounce (rebond) quand "Non" fuit */
+  /* ✅ Bounce */
   @keyframes bounce {
     0%   { transform: scale(1); }
     30%  { transform: scale(1.12); }
     60%  { transform: scale(0.96); }
     100% { transform: scale(1); }
   }
-  .bounce {
-    animation: bounce 220ms ease-out;
-  }
+  .bounce { animation: bounce 220ms ease-out; }
 
   .hidden{ display:none; }
 
-  /* ❤️ Effet "Oui" */
+  /* ❤️ burst */
   .burst-heart{
     position:fixed;
     bottom:-40px;
@@ -169,7 +165,7 @@
     100% { transform: translateY(-110vh) scale(1.5); opacity:0; }
   }
 
-  /* ✨ Petits coeurs qui suivent le doigt */
+  /* ✨ trail hearts */
   .trail-heart{
     position:fixed;
     transform: translate(-50%, -50%) scale(1);
@@ -221,35 +217,51 @@
   const result   = document.getElementById("result");
 
   /* ----------------------------
+     Safe area iPhone + padding
+  ---------------------------- */
+  function safePadding(){
+    const cs = getComputedStyle(document.documentElement);
+    const top = parseFloat(cs.getPropertyValue("env(safe-area-inset-top)")) || 0;
+    const right = parseFloat(cs.getPropertyValue("env(safe-area-inset-right)")) || 0;
+    const bottom = parseFloat(cs.getPropertyValue("env(safe-area-inset-bottom)")) || 0;
+    const left = parseFloat(cs.getPropertyValue("env(safe-area-inset-left)")) || 0;
+    return {top,right,bottom,left};
+  }
+
+  function getBoundsWithSafeArea(btnRect){
+    const sa = safePadding();
+    const pad = 18;
+    const minX = pad + sa.left;
+    const minY = pad + sa.top;
+    const maxX = window.innerWidth  - btnRect.width  - pad - sa.right;
+    const maxY = window.innerHeight - btnRect.height - pad - sa.bottom;
+    return {minX, minY, maxX, maxY};
+  }
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  /* ----------------------------
      💖 Background hearts
   ---------------------------- */
   function spawnBgHeart(){
     const el = document.createElement("div");
     el.className = "bg-heart";
     el.textContent = "❤️";
-
-    const x = Math.random() * 100;
-    const size = 10 + Math.random() * 22;
-    const opacity = 0.06 + Math.random() * 0.12;
-    const blur = Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0;
-    const duration = 10 + Math.random() * 14;
-    const rotate = (-20 + Math.random() * 40);
-
-    el.style.setProperty("--x", x + "vw");
-    el.style.setProperty("--s", size + "px");
-    el.style.setProperty("--o", opacity);
-    el.style.setProperty("--b", blur + "px");
-    el.style.setProperty("--d", duration + "s");
-    el.style.setProperty("--r", rotate + "deg");
-
+    el.style.setProperty("--x", (Math.random()*100) + "vw");
+    el.style.setProperty("--s", (10 + Math.random()*22) + "px");
+    el.style.setProperty("--o", (0.06 + Math.random()*0.12));
+    el.style.setProperty("--b", (Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0) + "px");
+    el.style.setProperty("--d", (10 + Math.random()*14) + "s");
+    el.style.setProperty("--r", (-20 + Math.random()*40) + "deg");
     heartsBg.appendChild(el);
-    setTimeout(() => el.remove(), duration * 1000 + 2000);
+    const duration = 10 + Math.random()*14;
+    setTimeout(() => el.remove(), duration*1000 + 2000);
   }
   for(let i=0;i<18;i++) setTimeout(spawnBgHeart, i * 350);
   setInterval(spawnBgHeart, 650);
 
   /* ----------------------------
-     ✨ Hearts follow finger/mouse (throttled)
+     ✨ trail hearts (throttled)
   ---------------------------- */
   let lastTrail = 0;
   function spawnTrailHeart(x, y){
@@ -303,22 +315,18 @@
   const YES_GROW_PER_SEC = 0.06;
 
   /* ----------------------------
-     🙃 Non: start beside Oui, then detaches and flees with a bounce
+     🙃 Non : stays always visible
   ---------------------------- */
   let noDetached = false;
 
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-
   function bounceNo(){
     noBtn.classList.remove("bounce");
-    // forcer le reflow pour relancer l'animation
     void noBtn.offsetWidth;
     noBtn.classList.add("bounce");
   }
 
   function detachNoIfNeeded(){
     if (noDetached) return;
-
     const r = noBtn.getBoundingClientRect();
     noBtn.style.position = "fixed";
     noBtn.style.left = r.left + "px";
@@ -326,9 +334,20 @@
     noDetached = true;
   }
 
-  function moveNoAwayFrom(px, py){
-    const padding = 18;
+  function keepNoInsideViewport(){
     const rect = noBtn.getBoundingClientRect();
+    const {minX, minY, maxX, maxY} = getBoundsWithSafeArea(rect);
+
+    const x = clamp(rect.left, minX, maxX);
+    const y = clamp(rect.top,  minY, maxY);
+
+    noBtn.style.left = x + "px";
+    noBtn.style.top  = y + "px";
+  }
+
+  function moveNoAwayFrom(px, py){
+    const rect = noBtn.getBoundingClientRect();
+    const {minX, minY, maxX, maxY} = getBoundsWithSafeArea(rect);
 
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
@@ -344,37 +363,38 @@
     const len = Math.hypot(dx, dy) || 1;
     dx /= len; dy /= len;
 
-    const step = 150;
+    // déplacement en plusieurs essais pour éviter d'aller sur un bord
+    const step = 170;
+    let tx = rect.left + dx * step;
+    let ty = rect.top  + dy * step;
 
-    const targetX = rect.left + dx * step;
-    const targetY = rect.top  + dy * step;
+    // clamp toujours dans l'écran
+    tx = clamp(tx, minX, maxX);
+    ty = clamp(ty, minY, maxY);
 
-    const maxX = innerWidth  - rect.width  - padding;
-    const maxY = innerHeight - rect.height - padding;
+    noBtn.style.left = tx + "px";
+    noBtn.style.top  = ty + "px";
 
-    noBtn.style.left = clamp(targetX, padding, maxX) + "px";
-    noBtn.style.top  = clamp(targetY, padding, maxY) + "px";
-
-    // ✅ bounce à chaque fuite
     bounceNo();
   }
 
+  // Si jamais il n'est pas détaché, on ne touche pas à sa position (il reste à côté du Oui)
+  // Dès qu'on s'approche -> il se détache puis fuit, mais reste visible.
   let lastT = performance.now();
   function loop(t){
     const dt = Math.min(0.05, (t - lastT)/1000);
     lastT = t;
 
-    // Oui grossit doucement
     yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
     yesBtn.style.transform = `scale(${yesScale})`;
 
-    // Non fuit si on s'approche
+    // tant qu'il est "inline", on calcule la distance sur sa position actuelle
     const rect = noBtn.getBoundingClientRect();
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
-
     const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
-    const fleeRadius = 130;
+
+    const fleeRadius = 140;
 
     if (pointer.active && dist < fleeRadius){
       detachNoIfNeeded();
@@ -382,11 +402,14 @@
       yesScale = Math.min(YES_MAX, yesScale + 0.02);
     }
 
+    // sécurité : s'il est détaché, on le garde toujours dans la fenêtre
+    if (noDetached) keepNoInsideViewport();
+
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
 
-  // Si elle tente de cliquer "Non", il fuit (mais ne disparaît jamais)
+  // Si elle essaye de cliquer "Non" : il fuit (sans disparaître)
   noBtn.addEventListener("mousedown", (e) => {
     e.preventDefault();
     detachNoIfNeeded();
@@ -424,16 +447,10 @@
     startBurstHearts();
   });
 
-  // Recalage si rotation/resize (mobile)
   window.addEventListener("resize", () => {
-    if (!noDetached) return;
-    const rect = noBtn.getBoundingClientRect();
-    const padding = 18;
-    const maxX = innerWidth - rect.width - padding;
-    const maxY = innerHeight - rect.height - padding;
-    noBtn.style.left = clamp(rect.left, padding, maxX) + "px";
-    noBtn.style.top  = clamp(rect.top, padding, maxY) + "px";
+    if (noDetached) keepNoInsideViewport();
   });
 </script>
 </body>
 </html>
+
