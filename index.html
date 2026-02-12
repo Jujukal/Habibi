@@ -13,7 +13,6 @@
     --text:#111;
     --muted:#6b7280;
   }
-
   *{ box-sizing:border-box; }
 
   body{
@@ -24,10 +23,13 @@
     align-items:center;
     justify-content:center;
     color:var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-                 "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background: radial-gradient(1200px 800px at 20% 20%, rgba(255,255,255,.45), rgba(255,255,255,0) 55%),
-                linear-gradient(135deg, var(--bg1), var(--bg2));
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 800px at 20% 20%, rgba(255,255,255,.45), rgba(255,255,255,0) 55%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: none; /* pour un tracking fluide du doigt */
   }
 
   /* 💖 Coeurs en arrière-plan */
@@ -37,7 +39,6 @@
     pointer-events:none;
     z-index:0;
   }
-
   .bg-heart{
     position:absolute;
     left:var(--x);
@@ -48,26 +49,24 @@
     transform: translateY(0) rotate(var(--r));
     animation: fall var(--d) linear infinite;
   }
-
   @keyframes fall{
     0%   { transform: translateY(-10vh) rotate(var(--r)); }
     100% { transform: translateY(120vh) rotate(calc(var(--r) + 40deg)); }
   }
 
-  /* ✨ Animation douce à l’apparition */
+  /* ✨ Apparition douce */
   .wrap{
     position:relative;
     z-index:1;
     width:min(560px, calc(100vw - 32px));
     animation: popIn 700ms cubic-bezier(.2,.9,.2,1) both;
   }
-
   @keyframes popIn{
     from{ opacity:0; transform: translateY(12px) scale(.98); }
     to  { opacity:1; transform: translateY(0) scale(1); }
   }
 
-  /* 📱 Design premium style Apple : glassmorphism */
+  /* 📱 Apple-ish glass */
   .card{
     width:100%;
     padding: 32px 28px;
@@ -94,11 +93,9 @@
     font-size: clamp(22px, 3.2vw, 30px);
     letter-spacing: -0.02em;
     line-height:1.1;
-    color: #1b1b1f;
-    /* comme tu voulais avant : une ligne si possible */
+    color:#1b1b1f;
     white-space: nowrap;
   }
-
   .subtitle{
     margin:0;
     color: var(--muted);
@@ -123,26 +120,29 @@
     transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
     box-shadow: 0 10px 24px rgba(0,0,0,.10);
     user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    will-change: transform;
   }
 
+  /* 💘 Bouton Oui (grossit progressivement via JS) */
   #yes{
     background: linear-gradient(180deg, #ff5a52, var(--red));
     color:white;
   }
-  #yes:hover{ transform: translateY(-1px); box-shadow: 0 14px 30px rgba(0,0,0,.14); }
-  #yes:active{ transform: translateY(0px) scale(.99); }
+  #yes:hover{ transform: translateY(-1px) scale(var(--yesScale, 1)); box-shadow: 0 14px 30px rgba(0,0,0,.14); }
+  #yes:active{ transform: translateY(0px) scale(calc(var(--yesScale, 1) * .99)); }
 
+  /* 🙃 Bouton Non (se déplace en position fixed via JS) */
   #no{
     background: rgba(17,17,17,.06);
     color:#111;
     box-shadow: none;
     border: 1px solid rgba(0,0,0,.08);
   }
-  #no:hover{ transform: translateY(-1px); }
 
   .hidden{ display:none; }
 
-  /* ❤️ Explosion de coeurs au "Oui" */
+  /* ❤️ Effet "Oui" */
   .burst-heart{
     position:fixed;
     bottom:-40px;
@@ -155,13 +155,28 @@
     z-index:2;
     filter: drop-shadow(0 8px 18px rgba(0,0,0,.12));
   }
-
   @keyframes rise{
     0%   { transform: translateY(0) scale(1); opacity:.95; }
     100% { transform: translateY(-110vh) scale(1.5); opacity:0; }
   }
 
-  /* Sur petit écran, autoriser le retour à la ligne au lieu de déborder */
+  /* ✨ Petits coeurs qui suivent le doigt */
+  .trail-heart{
+    position:fixed;
+    left:0; top:0;
+    transform: translate(-50%, -50%) scale(1);
+    font-size: 16px;
+    opacity: .9;
+    pointer-events:none;
+    z-index:2;
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
+    animation: trail 900ms ease-out forwards;
+  }
+  @keyframes trail{
+    0%   { transform: translate(-50%, -50%) scale(1); opacity:.9; }
+    100% { transform: translate(-50%, calc(-50% - 40px)) scale(1.35); opacity:0; }
+  }
+
   @media (max-width: 420px){
     h1{ white-space: normal; }
     .card{ padding: 26px 18px; min-height: 300px; }
@@ -170,13 +185,12 @@
 </head>
 
 <body>
-  <!-- 💖 Coeurs en arrière-plan dès l’ouverture -->
   <div id="hearts-bg" aria-hidden="true"></div>
 
   <div class="wrap">
     <div class="card" id="card">
       <h1>💌 Veux-tu être ma Habibi ? 💌</h1>
-      <p class="subtitle">(Clique sur "Non" pour voir)</p>
+      <p class="subtitle">Approche-toi du “Non” 😈</p>
 
       <div class="btnrow">
         <button id="yes">Oui 💖</button>
@@ -185,7 +199,7 @@
     </div>
 
     <div class="card hidden" id="result">
-      <h1>J'en étais sûr !</h1>
+      <h1>J'en étais sûr ! 🥰</h1>
       <p class="subtitle">
         RDV le <strong>14 février à 20h</strong><br>
         📍 Surprise ✨
@@ -195,23 +209,25 @@
 
 <script>
   const heartsBg = document.getElementById("hearts-bg");
-  const yesBtn = document.getElementById("yes");
-  const noBtn = document.getElementById("no");
-  const card = document.getElementById("card");
-  const result = document.getElementById("result");
+  const yesBtn   = document.getElementById("yes");
+  const noBtn    = document.getElementById("no");
+  const card     = document.getElementById("card");
+  const result   = document.getElementById("result");
 
-  // --- 💖 Coeurs en arrière-plan (dès l'ouverture) ---
+  /* ----------------------------
+     💖 Background hearts (soft)
+  ---------------------------- */
   function spawnBgHeart(){
     const el = document.createElement("div");
     el.className = "bg-heart";
     el.textContent = "❤️";
 
-    const x = Math.random() * 100;              // vw
-    const size = 10 + Math.random() * 22;       // px
+    const x = Math.random() * 100;
+    const size = 10 + Math.random() * 22;
     const opacity = 0.06 + Math.random() * 0.12;
     const blur = Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0;
-    const duration = 10 + Math.random() * 14;   // s
-    const rotate = (-20 + Math.random() * 40);  // deg
+    const duration = 10 + Math.random() * 14;
+    const rotate = (-20 + Math.random() * 40);
 
     el.style.setProperty("--x", x + "vw");
     el.style.setProperty("--s", size + "px");
@@ -221,33 +237,168 @@
     el.style.setProperty("--r", rotate + "deg");
 
     heartsBg.appendChild(el);
-
-    // Nettoyage pour éviter d'accumuler
     setTimeout(() => el.remove(), duration * 1000 + 2000);
   }
-
-  // Densité douce (premium)
-  for(let i=0;i<18;i++){
-    setTimeout(spawnBgHeart, i * 350);
-  }
+  for(let i=0;i<18;i++) setTimeout(spawnBgHeart, i * 350);
   setInterval(spawnBgHeart, 650);
 
-  // --- ❤️ Effet "Oui" : pluie de coeurs + écran RDV ---
-  let burstTimer = null;
+  /* ----------------------------
+     ✨ Hearts react to finger/mouse
+     (throttled for iPhone smooth)
+  ---------------------------- */
+  let lastTrail = 0;
+  function spawnTrailHeart(x, y){
+    const now = performance.now();
+    if (now - lastTrail < 55) return; // throttle
+    lastTrail = now;
 
+    const h = document.createElement("div");
+    h.className = "trail-heart";
+    h.textContent = "❤️";
+
+    h.style.left = x + "px";
+    h.style.top  = y + "px";
+    h.style.fontSize = (12 + Math.random()*12) + "px";
+    h.style.opacity  = (0.35 + Math.random()*0.45);
+
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 950);
+  }
+
+  function pointerXY(e){
+    if (e.touches && e.touches[0]) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    return {x: e.clientX, y: e.clientY};
+  }
+
+  window.addEventListener("mousemove", (e) => {
+    const {x,y} = pointerXY(e);
+    spawnTrailHeart(x,y);
+    pointer.x = x; pointer.y = y; pointer.active = true;
+  }, {passive:true});
+
+  window.addEventListener("touchmove", (e) => {
+    const {x,y} = pointerXY(e);
+    spawnTrailHeart(x,y);
+    pointer.x = x; pointer.y = y; pointer.active = true;
+  }, {passive:false});
+
+  window.addEventListener("touchstart", (e) => {
+    const {x,y} = pointerXY(e);
+    spawnTrailHeart(x,y);
+    pointer.x = x; pointer.y = y; pointer.active = true;
+  }, {passive:false});
+
+  window.addEventListener("mouseleave", () => { pointer.active = false; });
+
+  /* ----------------------------
+     🙃 "Non" moves away when you approach
+  ---------------------------- */
+  const pointer = { x: window.innerWidth/2, y: window.innerHeight/2, active: false };
+
+  // place "Non" in fixed position at start (so it can flee anywhere)
+  function placeNoInitial(){
+    noBtn.style.position = "fixed";
+    moveNoToRandom();
+  }
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  function moveNoToRandom(){
+    const padding = 18;
+    const rect = noBtn.getBoundingClientRect();
+    const maxX = window.innerWidth  - rect.width  - padding;
+    const maxY = window.innerHeight - rect.height - padding;
+
+    const x = padding + Math.random() * Math.max(0, maxX - padding);
+    const y = padding + Math.random() * Math.max(0, maxY - padding);
+
+    noBtn.style.left = x + "px";
+    noBtn.style.top  = y + "px";
+  }
+
+  function moveNoAwayFrom(px, py){
+    const padding = 18;
+    const rect = noBtn.getBoundingClientRect();
+
+    // current center of button
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top  + rect.height/2;
+
+    let dx = cx - px;
+    let dy = cy - py;
+
+    // if pointer is exactly at center, choose random direction
+    if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001){
+      dx = (Math.random() - 0.5);
+      dy = (Math.random() - 0.5);
+    }
+
+    // normalize
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len; dy /= len;
+
+    // step size (bigger = more "magical")
+    const step = 140;
+
+    // new top-left position
+    const targetX = (rect.left + dx * step);
+    const targetY = (rect.top  + dy * step);
+
+    const maxX = window.innerWidth  - rect.width  - padding;
+    const maxY = window.innerHeight - rect.height - padding;
+
+    noBtn.style.left = clamp(targetX, padding, maxX) + "px";
+    noBtn.style.top  = clamp(targetY, padding, maxY) + "px";
+  }
+
+  // proximity detection loop (super smooth)
+  let yesScale = 1.0;
+  const YES_MAX = 1.45; // limite grossissement
+  const YES_GROW_PER_SEC = 0.06; // grossit progressivement
+  let lastT = performance.now();
+
+  function loop(t){
+    const dt = Math.min(0.05, (t - lastT) / 1000);
+    lastT = t;
+
+    // 💘 Oui grossit progressivement
+    yesScale = Math.min(YES_MAX, yesScale + YES_GROW_PER_SEC * dt);
+    yesBtn.style.setProperty("--yesScale", yesScale.toFixed(3));
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    // 🙃 Non fuit seulement si on s'approche
+    const rect = noBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top  + rect.height/2;
+
+    const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+
+    // rayon de "détection" (mobile-friendly)
+    const fleeRadius = 140;
+
+    // si le doigt/souris s'approche, il fuit
+    if (pointer.active && dist < fleeRadius){
+      moveNoAwayFrom(pointer.x, pointer.y);
+
+      // petit bonus: Oui gagne un mini boost quand Non fuit 😈
+      yesScale = Math.min(YES_MAX, yesScale + 0.015);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  /* ----------------------------
+     ❤️ YES -> result + heart burst
+  ---------------------------- */
+  let burstTimer = null;
   function startBurstHearts(){
     if (burstTimer) return;
     burstTimer = setInterval(() => {
       const h = document.createElement("div");
       h.className = "burst-heart";
       h.textContent = "❤️";
-
-      const x = Math.random() * 100;
-      const size = 18 + Math.random() * 26;
-
-      h.style.setProperty("--x", x + "vw");
-      h.style.setProperty("--s", size + "px");
-
+      h.style.setProperty("--x", (Math.random() * 100) + "vw");
+      h.style.setProperty("--s", (18 + Math.random() * 26) + "px");
       document.body.appendChild(h);
       setTimeout(() => h.remove(), 3800);
     }, 220);
@@ -259,30 +410,19 @@
     startBurstHearts();
   });
 
-  // --- 🙃 Bouton "Non" qui s'échappe ---
-  function moveNoButton(){
-    // place le bouton en fixed pour se déplacer sur l'écran
-    noBtn.style.position = "fixed";
+  // Si elle essaye de cliquer "Non" sur mobile, il fuit aussi
+  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoToRandom(); }, {passive:false});
+  noBtn.addEventListener("mousedown", (e) => { e.preventDefault(); moveNoToRandom(); });
 
-    const padding = 16;
-    const btnRect = noBtn.getBoundingClientRect();
-    const maxX = window.innerWidth - btnRect.width - padding;
-    const maxY = window.innerHeight - btnRect.height - padding;
+  // init
+  placeNoInitial();
+  requestAnimationFrame(loop);
 
-    const x = padding + Math.random() * Math.max(0, maxX - padding);
-    const y = padding + Math.random() * Math.max(0, maxY - padding);
-
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
-  }
-
-  noBtn.addEventListener("mouseover", moveNoButton);
-  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoButton(); }, {passive:false});
-
-  // Ajuste si l'écran change (mobile rotation)
   window.addEventListener("resize", () => {
-    if (noBtn.style.position === "fixed") moveNoButton();
+    // garder le bouton dans l'écran
+    moveNoToRandom();
   });
 </script>
 </body>
 </html>
+
