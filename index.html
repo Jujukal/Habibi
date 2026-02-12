@@ -15,6 +15,13 @@
   }
   *{ box-sizing:border-box; }
 
+  /* 🌸 Animation douce du background */
+  @keyframes bgBreath{
+    0%{ transform: scale(1); }
+    50%{ transform: scale(1.04); }
+    100%{ transform: scale(1); }
+  }
+
   body{
     margin:0;
     height:100vh;
@@ -23,13 +30,11 @@
     align-items:center;
     justify-content:center;
     color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
     background:
       radial-gradient(1200px 800px at 20% 20%, rgba(255,255,255,.45), rgba(255,255,255,0) 55%),
       linear-gradient(135deg, var(--bg1), var(--bg2));
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    touch-action: none;
+    animation: bgBreath 10s ease-in-out infinite;
   }
 
   #hearts-bg{
@@ -38,403 +43,261 @@
     pointer-events:none;
     z-index:0;
   }
-  .bg-heart{
-    position:absolute;
-    left:var(--x);
-    top:-10vh;
-    font-size: var(--s);
-    opacity: var(--o);
-    filter: blur(var(--b));
-    transform: translateY(0) rotate(var(--r));
-    animation: fall var(--d) linear infinite;
+
+  /* ✨ Animation apparition carte */
+  @keyframes cardIntro{
+    0%{
+      opacity:0;
+      transform: translateY(40px) scale(.92);
+      filter: blur(8px);
+    }
+    60%{
+      opacity:1;
+      transform: translateY(-6px) scale(1.02);
+      filter: blur(0);
+    }
+    100%{
+      transform: translateY(0) scale(1);
+    }
   }
-  @keyframes fall{
-    0%   { transform: translateY(-10vh) rotate(var(--r)); }
-    100% { transform: translateY(120vh) rotate(calc(var(--r) + 40deg)); }
+
+  /* ✨ Floating subtil continu */
+  @keyframes floatSoft{
+    0%{ transform: translateY(0); }
+    50%{ transform: translateY(-6px); }
+    100%{ transform: translateY(0); }
   }
 
   .wrap{
     position:relative;
     z-index:1;
     width:min(560px, calc(100vw - 32px));
-    animation: popIn 700ms cubic-bezier(.2,.9,.2,1) both;
-  }
-  @keyframes popIn{
-    from{ opacity:0; transform: translateY(12px) scale(.98); }
-    to  { opacity:1; transform: translateY(0) scale(1); }
+    animation: cardIntro .9s cubic-bezier(.2,.9,.2,1) both;
   }
 
   .card{
     width:100%;
-    padding: 32px 28px;
-    border-radius: 28px;
+    padding:32px 28px;
+    border-radius:28px;
     background: rgba(255,255,255,.72);
     backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255,255,255,.55);
-    box-shadow:
-      0 24px 60px rgba(0,0,0,.18),
-      0 1px 0 rgba(255,255,255,.6) inset;
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:0 24px 60px rgba(0,0,0,.18);
     text-align:center;
-
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    gap: 18px;
-    min-height: 320px;
-
-    position: relative;
-    overflow: hidden;
+    gap:18px;
+    min-height:320px;
+    position:relative;
+    overflow:hidden;
+    animation: floatSoft 6s ease-in-out infinite;
   }
 
   h1{
     margin:0;
-    font-size: clamp(22px, 3.2vw, 30px);
-    letter-spacing: -0.02em;
-    line-height:1.1;
-    color:#1b1b1f;
-    white-space: nowrap;
+    font-size: clamp(22px,3.2vw,30px);
+    letter-spacing:-0.02em;
   }
+
   .subtitle{
     margin:0;
     color: var(--muted);
-    font-size: 14px;
+    font-size:14px;
   }
 
   .btnrow{
     display:flex;
     gap:12px;
-    align-items:center;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top: 6px;
+    margin-top:6px;
+  }
+
+  /* ✨ Boutons qui apparaissent en cascade */
+  @keyframes btnIntro{
+    0%{
+      opacity:0;
+      transform: translateY(20px) scale(.9);
+    }
+    100%{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   button{
     border:0;
-    border-radius: 999px;
-    padding: 12px 18px;
-    font-size: 16px;
+    border-radius:999px;
+    padding:12px 18px;
+    font-size:16px;
     cursor:pointer;
-    transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
-    box-shadow: 0 10px 24px rgba(0,0,0,.10);
-    user-select:none;
-    -webkit-tap-highlight-color: transparent;
-    will-change: transform, left, top;
+    box-shadow:0 10px 24px rgba(0,0,0,.10);
+    animation: btnIntro .6s ease both;
   }
 
   #yes{
-    background: linear-gradient(180deg, #ff5a52, var(--red));
+    background: linear-gradient(180deg,#ff5a52,var(--red));
     color:white;
+    animation-delay:.35s;
   }
 
   #no{
     background: rgba(17,17,17,.06);
-    color:#111;
-    box-shadow: none;
-    border: 1px solid rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.08);
+    animation-delay:.55s;
   }
 
-  @keyframes bounce {
-    0%   { transform: scale(1); }
-    30%  { transform: scale(1.12); }
-    60%  { transform: scale(0.96); }
-    100% { transform: scale(1); }
+  @keyframes bounce{
+    0%{transform:scale(1);}
+    30%{transform:scale(1.12);}
+    60%{transform:scale(.96);}
+    100%{transform:scale(1);}
   }
-  .bounce { animation: bounce 220ms ease-out; }
+  .bounce{animation:bounce 220ms ease-out;}
 
-  .hidden{ display:none; }
-
-  .burst-heart{
-    position:fixed;
-    bottom:-40px;
-    left:var(--x);
-    font-size: var(--s);
-    opacity: .95;
-    animation: rise 3.5s ease-out forwards;
-    pointer-events:none;
-    z-index:2;
-    filter: drop-shadow(0 8px 18px rgba(0,0,0,.12));
-  }
-  @keyframes rise{
-    0%   { transform: translateY(0) scale(1); opacity:.95; }
-    100% { transform: translateY(-110vh) scale(1.5); opacity:0; }
-  }
-
-  .trail-heart{
-    position:fixed;
-    transform: translate(-50%, -50%) scale(1);
-    pointer-events:none;
-    z-index:2;
-    animation: trail 900ms ease-out forwards;
-    filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
-  }
-  @keyframes trail{
-    0%   { transform: translate(-50%, -50%) scale(1); opacity:.85; }
-    100% { transform: translate(-50%, calc(-50% - 40px)) scale(1.35); opacity:0; }
-  }
-
-  @media (max-width: 420px){
-    h1{ white-space: normal; }
-    .card{ padding: 26px 18px; min-height: 300px; }
-  }
+  .hidden{display:none;}
 </style>
 </head>
 
 <body>
-  <div id="hearts-bg" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="card" id="card">
+    <h1>💌 Veux-tu être ma Habibi ? 💌</h1>
+    <p class="subtitle">Essaie d’approcher le “Non” 😈</p>
 
-  <div class="wrap">
-    <div class="card" id="card">
-      <h1>💌 Veux-tu être ma Habibi ? 💌</h1>
-      
-      <div class="btnrow" id="btnrow">
-        <button id="yes">Oui 💖</button>
-        <button id="no">Non 🙃</button>
-      </div>
-    </div>
-
-    <div class="card hidden" id="result">
-      <h1>J'en étais sûr ! 🥰</h1>
-      <p class="subtitle">
-        RDV demain à 11h au <strong>49°26'36.0"N 1°05'39.7"E</strong> 📍 
-         Recupère ta chocolatine 🥐 <br>         
-          Et donne ton prénom pour avoir le reste des indications 😘
-      </p>
+    <div class="btnrow">
+      <button id="yes">Oui 💖</button>
+      <button id="no">Non 🙃</button>
     </div>
   </div>
 
+  <div class="card hidden" id="result">
+    <h1>J'en étais sûr ! 🥰</h1>
+    <p class="subtitle">
+      RDV le <strong>14 février à 20h</strong><br>
+      📍 Surprise ✨
+    </p>
+  </div>
+</div>
+
 <script>
-  const heartsBg = document.getElementById("hearts-bg");
-  const yesBtn   = document.getElementById("yes");
-  const noBtn    = document.getElementById("no");
-  const card     = document.getElementById("card");
-  const result   = document.getElementById("result");
+const yesBtn = document.getElementById("yes");
+const noBtn  = document.getElementById("no");
+const card   = document.getElementById("card");
+const result = document.getElementById("result");
 
-  /* ----------------------------
-     💖 Background hearts
-  ---------------------------- */
-  function spawnBgHeart(){
-    const el = document.createElement("div");
-    el.className = "bg-heart";
-    el.textContent = "❤️";
-    el.style.setProperty("--x", (Math.random()*100) + "vw");
-    el.style.setProperty("--s", (10 + Math.random()*22) + "px");
-    el.style.setProperty("--o", (0.06 + Math.random()*0.12));
-    el.style.setProperty("--b", (Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0) + "px");
-    el.style.setProperty("--d", (10 + Math.random()*14) + "s");
-    el.style.setProperty("--r", (-20 + Math.random()*40) + "deg");
-    heartsBg.appendChild(el);
-    const duration = 10 + Math.random()*14;
-    setTimeout(() => el.remove(), duration*1000 + 2000);
-  }
-  for(let i=0;i<18;i++) setTimeout(spawnBgHeart, i * 350);
-  setInterval(spawnBgHeart, 650);
+const pointer={x:innerWidth/2,y:innerHeight/2,active:false};
 
-  /* ----------------------------
-     ✨ trail hearts (throttled)
-  ---------------------------- */
-  let lastTrail = 0;
-  function spawnTrailHeart(x, y){
-    const now = performance.now();
-    if (now - lastTrail < 55) return;
-    lastTrail = now;
+function pointerXY(e){
+  if(e.touches&&e.touches[0]) return {x:e.touches[0].clientX,y:e.touches[0].clientY};
+  return {x:e.clientX,y:e.clientY};
+}
 
-    const h = document.createElement("div");
-    h.className = "trail-heart";
-    h.textContent = "❤️";
-    h.style.left = x + "px";
-    h.style.top  = y + "px";
-    h.style.fontSize = (12 + Math.random()*12) + "px";
-    h.style.opacity  = (0.35 + Math.random()*0.45);
+window.addEventListener("mousemove",(e)=>{
+  const {x,y}=pointerXY(e);
+  pointer.x=x;pointer.y=y;pointer.active=true;
+},{passive:true});
 
-    document.body.appendChild(h);
-    setTimeout(() => h.remove(), 950);
-  }
+window.addEventListener("touchmove",(e)=>{
+  const {x,y}=pointerXY(e);
+  pointer.x=x;pointer.y=y;pointer.active=true;
+},{passive:false});
 
-  const pointer = { x: innerWidth/2, y: innerHeight/2, active:false };
-  function pointerXY(e){
-    if (e.touches && e.touches[0]) return {x: e.touches[0].clientX, y: e.touches[0].clientY};
-    return {x: e.clientX, y: e.clientY};
-  }
+let noDetached=false;
 
-  window.addEventListener("mousemove", (e) => {
-    const {x,y} = pointerXY(e);
-    pointer.x=x; pointer.y=y; pointer.active=true;
-    spawnTrailHeart(x,y);
-  }, {passive:true});
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
 
-  window.addEventListener("touchstart", (e) => {
-    const {x,y} = pointerXY(e);
-    pointer.x=x; pointer.y=y; pointer.active=true;
-    spawnTrailHeart(x,y);
-  }, {passive:false});
+function bounceNo(){
+  noBtn.classList.remove("bounce");
+  void noBtn.offsetWidth;
+  noBtn.classList.add("bounce");
+}
 
-  window.addEventListener("touchmove", (e) => {
-    const {x,y} = pointerXY(e);
-    pointer.x=x; pointer.y=y; pointer.active=true;
-    spawnTrailHeart(x,y);
-  }, {passive:false});
+function getCardBounds(){
+  const c=card.getBoundingClientRect();
+  const b=noBtn.getBoundingClientRect();
+  const pad=16;
+  return{
+    minX:pad,
+    minY:pad,
+    maxX:c.width-b.width-pad,
+    maxY:c.height-b.height-pad,
+    cardRect:c
+  };
+}
 
-  window.addEventListener("mouseleave", () => pointer.active=false);
+function detachNoIfNeeded(){
+  if(noDetached) return;
+  const btn=noBtn.getBoundingClientRect();
+  const c=card.getBoundingClientRect();
 
-  /* ----------------------------
-     🙃 Non : reste DANS la carte
-  ---------------------------- */
-  let noDetached = false;
+  card.appendChild(noBtn);
 
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  noBtn.style.position="absolute";
+  noBtn.style.left=(btn.left-c.left)+"px";
+  noBtn.style.top =(btn.top -c.top )+"px";
+  noDetached=true;
+}
 
-  function bounceNo(){
-    noBtn.classList.remove("bounce");
-    void noBtn.offsetWidth;
-    noBtn.classList.add("bounce");
-  }
+function moveNoAwayFrom(px,py){
+  const {minX,minY,maxX,maxY,cardRect}=getCardBounds();
+  const r=noBtn.getBoundingClientRect();
 
-  function getCardBoundsForNo(){
-    const c = card.getBoundingClientRect();
-    const b = noBtn.getBoundingClientRect();
-    const pad = 16;
+  const cx=r.left+r.width/2;
+  const cy=r.top +r.height/2;
 
-    const minX = pad;
-    const minY = pad;
-    const maxX = c.width  - b.width  - pad;
-    const maxY = c.height - b.height - pad;
+  let dx=cx-px;
+  let dy=cy-py;
 
-    return {minX, minY, maxX, maxY, cardRect:c, btnRect:b};
-  }
+  const len=Math.hypot(dx,dy)||1;
+  dx/=len;dy/=len;
 
-  function detachNoIfNeeded(){
-    if (noDetached) return;
+  const leftInCard=r.left-cardRect.left;
+  const topInCard =r.top -cardRect.top;
 
-    const btn = noBtn.getBoundingClientRect();
-    const c   = card.getBoundingClientRect();
+  const step=170;
 
-    const leftInCard = btn.left - c.left;
-    const topInCard  = btn.top  - c.top;
+  let tx=leftInCard+dx*step;
+  let ty=topInCard +dy*step;
 
-    card.appendChild(noBtn);
+  tx=clamp(tx,minX,maxX);
+  ty=clamp(ty,minY,maxY);
 
-    noBtn.style.position = "absolute";
-    noBtn.style.left = leftInCard + "px";
-    noBtn.style.top  = topInCard  + "px";
-    noBtn.style.zIndex = "10";
+  noBtn.style.left=tx+"px";
+  noBtn.style.top =ty+"px";
 
-    noDetached = true;
+  bounceNo();
+}
+
+function loop(){
+  const r=noBtn.getBoundingClientRect();
+  const cx=r.left+r.width/2;
+  const cy=r.top +r.height/2;
+  const dist=Math.hypot(pointer.x-cx,pointer.y-cy);
+
+  const fleeRadius=260; // périmètre large
+
+  if(pointer.active&&dist<fleeRadius){
+    detachNoIfNeeded();
+    moveNoAwayFrom(pointer.x,pointer.y);
   }
 
-  function keepNoInsideCard(){
-    if (!noDetached) return;
-
-    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo();
-    const r = noBtn.getBoundingClientRect();
-
-    const leftInCard = r.left - cardRect.left;
-    const topInCard  = r.top  - cardRect.top;
-
-    const x = clamp(leftInCard, minX, maxX);
-    const y = clamp(topInCard,  minY, maxY);
-
-    noBtn.style.left = x + "px";
-    noBtn.style.top  = y + "px";
-  }
-
-  function moveNoAwayFrom(pointerClientX, pointerClientY){
-    const {minX, minY, maxX, maxY, cardRect} = getCardBoundsForNo();
-    const r = noBtn.getBoundingClientRect();
-
-    const cx = r.left + r.width/2;
-    const cy = r.top  + r.height/2;
-
-    let dx = cx - pointerClientX;
-    let dy = cy - pointerClientY;
-
-    if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001){
-      dx = (Math.random() - 0.5);
-      dy = (Math.random() - 0.5);
-    }
-
-    const len = Math.hypot(dx, dy) || 1;
-    dx /= len; dy /= len;
-
-    const leftInCard = r.left - cardRect.left;
-    const topInCard  = r.top  - cardRect.top;
-
-    const step = 170; // un peu plus "fort" si tu veux
-    let tx = leftInCard + dx * step;
-    let ty = topInCard  + dy * step;
-
-    tx = clamp(tx, minX, maxX);
-    ty = clamp(ty, minY, maxY);
-
-    noBtn.style.left = tx + "px";
-    noBtn.style.top  = ty + "px";
-
-    bounceNo();
-  }
-
-  /* ----------------------------
-     Loop : fuite (sans grossir Oui)
-  ---------------------------- */
-  function loop(){
-    const r = noBtn.getBoundingClientRect();
-    const cx = r.left + r.width/2;
-    const cy = r.top  + r.height/2;
-    const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
-
-    const fleeRadius = 240; // ✅ périmètre de fuite PLUS large (augmente encore si tu veux)
-
-    if (pointer.active && dist < fleeRadius){
-      detachNoIfNeeded();
-      moveNoAwayFrom(pointer.x, pointer.y);
-    }
-
-    keepNoInsideCard();
-    requestAnimationFrame(loop);
-  }
   requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
 
-  // Si elle essaye de cliquer "Non" : il fuit (dans la carte)
-  noBtn.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    detachNoIfNeeded();
-    moveNoAwayFrom(pointer.x, pointer.y);
-  });
+noBtn.addEventListener("mousedown",(e)=>{
+  e.preventDefault();
+  detachNoIfNeeded();
+  moveNoAwayFrom(pointer.x,pointer.y);
+});
 
-  noBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const {x,y} = pointerXY(e);
-    pointer.x=x; pointer.y=y; pointer.active=true;
-    detachNoIfNeeded();
-    moveNoAwayFrom(pointer.x, pointer.y);
-  }, {passive:false});
-
-  /* ----------------------------
-     ❤️ YES -> result + heart burst
-  ---------------------------- */
-  let burstTimer = null;
-  function startBurstHearts(){
-    if (burstTimer) return;
-    burstTimer = setInterval(() => {
-      const h = document.createElement("div");
-      h.className = "burst-heart";
-      h.textContent = "❤️";
-      h.style.setProperty("--x", (Math.random()*100) + "vw");
-      h.style.setProperty("--s", (18 + Math.random()*26) + "px");
-      document.body.appendChild(h);
-      setTimeout(() => h.remove(), 3800);
-    }, 220);
-  }
-
-  yesBtn.addEventListener("click", () => {
-    card.classList.add("hidden");
-    result.classList.remove("hidden");
-    startBurstHearts();
-  });
-
-  window.addEventListener("resize", () => keepNoInsideCard());
+yesBtn.addEventListener("click",()=>{
+  card.classList.add("hidden");
+  result.classList.remove("hidden");
+});
 </script>
 </body>
 </html>
+
 
