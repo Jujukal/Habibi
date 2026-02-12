@@ -14,26 +14,35 @@ body {
     align-items: center;
     font-family: Arial, sans-serif;
     overflow: hidden;
-    text-align: center;
 }
 
+/* 💌 CARTE BLANCHE PLUS GRANDE */
 .card {
     background: white;
-    padding: 40px;
-    border-radius: 20px;
+    width: 520px;
+    height: 300px;
+    border-radius: 25px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    max-width: 420px;
+
+    /* 🔥 centre tout à l'intérieur */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
 }
 
 h1 {
     color: #e63946;
-    white-space: nowrap; /* 🔥 garde le texte sur une seule ligne */
+    margin-bottom: 25px;
 }
 
+/* Boutons */
 button {
     font-size: 18px;
     padding: 12px 25px;
-    margin: 15px;
+    margin: 10px;
     border-radius: 30px;
     border: none;
     cursor: pointer;
@@ -53,6 +62,7 @@ button {
     display: none;
 }
 
+/* ❤️ animation coeurs */
 .heart {
     position: absolute;
     color: #e63946;
@@ -77,8 +87,10 @@ button {
 
 <div class="card" id="card">
     <h1>💌 Veux-tu être ma Valentine ? 💌</h1>
-    <button id="yes">Oui 💖</button>
-    <button id="no">Non 🙃</button>
+    <div>
+        <button id="yes">Oui 💖</button>
+        <button id="no">Non 🙃</button>
+    </div>
 </div>
 
 <div class="card hidden" id="result">
@@ -123,4 +135,3 @@ function startHearts() {
 
 </body>
 </html>
-
