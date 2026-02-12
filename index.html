@@ -139,6 +139,17 @@
     border: 1px solid rgba(0,0,0,.08);
   }
 
+  /* ✅ Bounce (rebond) quand "Non" fuit */
+  @keyframes bounce {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.12); }
+    60%  { transform: scale(0.96); }
+    100% { transform: scale(1); }
+  }
+  .bounce {
+    animation: bounce 220ms ease-out;
+  }
+
   .hidden{ display:none; }
 
   /* ❤️ Effet "Oui" */
@@ -206,7 +217,6 @@
   const heartsBg = document.getElementById("hearts-bg");
   const yesBtn   = document.getElementById("yes");
   const noBtn    = document.getElementById("no");
-  const btnrow   = document.getElementById("btnrow");
   const card     = document.getElementById("card");
   const result   = document.getElementById("result");
 
@@ -218,16 +228,22 @@
     el.className = "bg-heart";
     el.textContent = "❤️";
 
-    el.style.setProperty("--x", (Math.random()*100) + "vw");
-    el.style.setProperty("--s", (10 + Math.random()*22) + "px");
-    el.style.setProperty("--o", (0.06 + Math.random()*0.12));
-    el.style.setProperty("--b", (Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0) + "px");
-    el.style.setProperty("--d", (10 + Math.random()*14) + "s");
-    el.style.setProperty("--r", (-20 + Math.random()*40) + "deg");
+    const x = Math.random() * 100;
+    const size = 10 + Math.random() * 22;
+    const opacity = 0.06 + Math.random() * 0.12;
+    const blur = Math.random() < 0.35 ? (0.5 + Math.random()*1.8) : 0;
+    const duration = 10 + Math.random() * 14;
+    const rotate = (-20 + Math.random() * 40);
+
+    el.style.setProperty("--x", x + "vw");
+    el.style.setProperty("--s", size + "px");
+    el.style.setProperty("--o", opacity);
+    el.style.setProperty("--b", blur + "px");
+    el.style.setProperty("--d", duration + "s");
+    el.style.setProperty("--r", rotate + "deg");
 
     heartsBg.appendChild(el);
-    const dur = parseFloat(el.style.getPropertyValue("--d")) || 12;
-    setTimeout(() => el.remove(), dur*1000 + 2000);
+    setTimeout(() => el.remove(), duration * 1000 + 2000);
   }
   for(let i=0;i<18;i++) setTimeout(spawnBgHeart, i * 350);
   setInterval(spawnBgHeart, 650);
@@ -287,23 +303,26 @@
   const YES_GROW_PER_SEC = 0.06;
 
   /* ----------------------------
-     🙃 Non: start beside Oui, then "detaches" and flees when you approach
+     🙃 Non: start beside Oui, then detaches and flees with a bounce
   ---------------------------- */
   let noDetached = false;
 
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
+  function bounceNo(){
+    noBtn.classList.remove("bounce");
+    // forcer le reflow pour relancer l'animation
+    void noBtn.offsetWidth;
+    noBtn.classList.add("bounce");
+  }
+
   function detachNoIfNeeded(){
     if (noDetached) return;
 
-    // prendre sa position actuelle (à côté du Oui)
     const r = noBtn.getBoundingClientRect();
-
-    // le mettre en fixed exactement au même endroit (sans "saut")
     noBtn.style.position = "fixed";
     noBtn.style.left = r.left + "px";
     noBtn.style.top  = r.top  + "px";
-
     noDetached = true;
   }
 
@@ -335,6 +354,9 @@
 
     noBtn.style.left = clamp(targetX, padding, maxX) + "px";
     noBtn.style.top  = clamp(targetY, padding, maxY) + "px";
+
+    // ✅ bounce à chaque fuite
+    bounceNo();
   }
 
   let lastT = performance.now();
@@ -357,16 +379,27 @@
     if (pointer.active && dist < fleeRadius){
       detachNoIfNeeded();
       moveNoAwayFrom(pointer.x, pointer.y);
-      yesScale = Math.min(YES_MAX, yesScale + 0.02); // petit boost 😈
+      yesScale = Math.min(YES_MAX, yesScale + 0.02);
     }
 
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
 
-  // Si elle tente de cliquer "Non", il se détache et fuit
-  noBtn.addEventListener("mousedown", (e) => { e.preventDefault(); detachNoIfNeeded(); moveNoAwayFrom(pointer.x, pointer.y); });
-  noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); detachNoIfNeeded(); moveNoAwayFrom(pointer.x, pointer.y); }, {passive:false});
+  // Si elle tente de cliquer "Non", il fuit (mais ne disparaît jamais)
+  noBtn.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    detachNoIfNeeded();
+    moveNoAwayFrom(pointer.x, pointer.y);
+  });
+
+  noBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const {x,y} = pointerXY(e);
+    pointer.x=x; pointer.y=y; pointer.active=true;
+    detachNoIfNeeded();
+    moveNoAwayFrom(pointer.x, pointer.y);
+  }, {passive:false});
 
   /* ----------------------------
      ❤️ YES -> result + heart burst
@@ -394,7 +427,6 @@
   // Recalage si rotation/resize (mobile)
   window.addEventListener("resize", () => {
     if (!noDetached) return;
-    // garder "Non" dans l'écran après resize
     const rect = noBtn.getBoundingClientRect();
     const padding = 18;
     const maxX = innerWidth - rect.width - padding;
@@ -405,4 +437,3 @@
 </script>
 </body>
 </html>
-
